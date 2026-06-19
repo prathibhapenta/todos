@@ -1,4 +1,4 @@
-import React,{useState, useEffect} from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import "./Todos.css"
 import {useNavigate} from 'react-router-dom'
 
@@ -13,36 +13,35 @@ const Todos = () => {
   const [editDescription, setEditDescription] = useState('')
   const navigate = useNavigate();
 
-  const getTodo = async () => {
-    const token = localStorage.getItem('token')
+ const getTodo = useCallback(async () => {
+  const token = localStorage.getItem('token')
 
-   const response = await fetch(
-     `${API}/todos/gettodo`,
-  {
+  const response = await fetch(`${API}/todos/gettodo`, {
     headers: {
       Authorization: token
     }
-  }
-)
+  })
 
-if(response.status === 401){
-  localStorage.removeItem('token')
-  navigate('/login')
-  return
-}
-    const data = await response.json()
-    setTodo(data)
-
-  }
-  
-  useEffect(() => {
-  const token = localStorage.getItem('token')
-  if(!token){
+  if (response.status === 401) {
+    localStorage.removeItem('token')
     navigate('/login')
-  }else{
+    return
+  }
+
+  const data = await response.json()
+  setTodo(data)
+}, [navigate])
+  
+useEffect(() => {
+  const token = localStorage.getItem('token')
+
+  if (!token) {
+    navigate('/login')
+  } else {
     getTodo()
   }
-},[navigate])
+}, [navigate, getTodo])
+
 const handlelogout = () => {
   localStorage.removeItem('token')
     navigate('/login')
